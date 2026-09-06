@@ -1,16 +1,63 @@
-# React + Vite
+# Tambola
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tambola (Housie) caller app — React + Vite web app, packaged for Android with Capacitor.
+Calls numbers out loud via text-to-speech, tracks the drawn board, and runs fully offline.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20+ and npm
+- For Android builds: JDK 17+, Android Studio (SDK + build tools), `ANDROID_HOME` set
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+git clone git@github.com:valerianpereira/tambola-app.git
+cd tambola-app
+npm install
+```
 
-## Expanding the ESLint configuration
+## Run in the browser
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev        # dev server with HMR at http://localhost:5173
+npm run build      # production build to dist/
+npm run preview    # serve the built dist/
+npm run lint       # eslint
+```
+
+## Run on Android
+
+```bash
+npm run cap:sync   # build + copy web assets into the android project
+npm run cap:open   # open in Android Studio, then Run
+```
+
+Or build a debug APK from the CLI:
+
+```bash
+npm run cap:sync
+cd android && ./gradlew assembleDebug
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+Note: `dist/` is gitignored, so run `npm run cap:sync` at least once before any Android build —
+otherwise the app ships without web assets.
+
+## Release builds
+
+Signing setup, release AAB, and Play Store upload steps: [docs/RELEASE.md](docs/RELEASE.md).
+
+## Project layout
+
+```
+src/
+  TambolaApp.jsx      main UI
+  useGameState.js     game state + number draw logic
+  capacitor-init.js   splash screen / status bar setup
+  data.js             number call phrases
+resources/            source SVGs for app icon and splash
+android/              Capacitor Android project
+docs/                 release guide, design notes
+```
+
+App icon and splash are regenerated from `resources/` with `npx capacitor-assets generate`.
