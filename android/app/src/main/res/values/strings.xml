@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tambola</string>
+    <string name="title_activity_main">Tambola</string>
+    <string name="package_name">com.valerian.tambola</string>
+    <string name="custom_url_scheme">com.valerian.tambola</string>
+</resources>
