@@ -1,3 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <text x="512" y="580" font-family="Arial, sans-serif" font-weight="bold" font-size="620" fill="white" text-anchor="middle" dominant-baseline="middle">T</text>
+  <rect width="1024" height="1024" fill="#D4552B"/>
+  <g fill="#F8EAE2">
+    <circle cx="302" cy="302" r="78"/>
+    <circle cx="512" cy="302" r="78"/>
+    <circle cx="722" cy="302" r="78"/>
+    <circle cx="302" cy="512" r="78"/>
+    <circle cx="722" cy="512" r="78"/>
+    <circle cx="302" cy="722" r="78"/>
+    <circle cx="512" cy="722" r="78"/>
+    <circle cx="722" cy="722" r="78"/>
+  </g>
+  <circle cx="512" cy="512" r="78" fill="#17A07A"/>
 </svg>
