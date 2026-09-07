@@ -10,15 +10,15 @@ Console: https://play.google.com/console/u/0/developers/4953426829520023902/app-
 
 | Field | Value |
 |---|---|
-| App name (30 max) | `Tambola — Housie Caller` |
+| App name (30 max) | `Tambola: Housie Caller` |
 | Package name | `com.valerian.tambola` |
 | Default language | English (India) — `en-IN` |
 | App or game | **Game** |
 | Category | **Board** |
 | Tags | Board game, Party game, Casual |
-| Contact email | valerian.pereira@bookmyshow.com |
+| Contact email | valerianpereira25@gmail.com |
 | Website | *(optional — leave blank or link the GitHub repo)* |
-| Privacy Policy URL | `https://valerianpereira.github.io/tambola-app/privacy-policy.html` (see docs/RELEASE.md to publish it) |
+| Privacy Policy URL | `https://valerianpereira.github.io/tambola-app/privacy-policy.html` — live |
 
 ---
 
