@@ -33,3 +33,6 @@ android/keystore.properties
 *.aab
 *.keystore
 *.jks
+
+# Playwright MCP session artifacts
+.playwright-mcp/

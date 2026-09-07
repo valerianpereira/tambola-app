@@ -1,96 +1,118 @@
-# Release Build — Tambola Android App
+# Release & Play Store — Tambola
 
 ## Prerequisites
 
-- JDK 17+ installed (`brew install openjdk@17`)
-- Android Studio installed (provides Android SDK, build tools, emulator)
-- `ANDROID_HOME` environment variable set (e.g. `export ANDROID_HOME=~/Library/Android/sdk`)
-- Add to PATH: `export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH`
+- JDK 21 (`brew install openjdk@21`) — pinned in `android/gradle.properties` via `org.gradle.java.home`
+- Android SDK (Android Studio, or command-line tools)
+- `export ANDROID_HOME=$HOME/Library/Android/sdk`
+- `export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH`
 
-## Development build (debug APK)
+## Debug build
 
 ```bash
-npm run build && npx cap sync android
+npm run cap:sync
+cd android && ./gradlew assembleDebug
+adb install app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Signing — already configured
+
+Release signing is wired in `android/app/build.gradle`. It reads
+`android/keystore.properties`, and falls back to an unsigned build when that file is
+missing (so a clean clone still builds).
+
+Both the keystore and the properties file are **gitignored** and exist only on this machine:
+
+| File | What it is |
+|---|---|
+| `android/tambola-upload.keystore` | RSA-4096 upload key, alias `tambola-upload`, valid to 2054 |
+| `android/keystore.properties` | store path, alias and passwords |
+
+> **Back these up.** Copy the `.keystore` file and its password into a password manager
+> now. Enrol in **Play App Signing** when you create the app in the console — Google then
+> holds the real signing key, and a lost *upload* key can be reset through support. Without
+> Play App Signing, losing this file means you can never update the app.
+
+To recreate the keystore from scratch:
+
+```bash
 cd android
-./gradlew assembleDebug
-```
-
-Output: `android/app/build/outputs/apk/debug/app-debug.apk`
-
-Install on a connected device:
-```bash
-adb install android/app/build/outputs/apk/debug/app-debug.apk
-```
-
-## Generate a signing keystore (one-time)
-
-```bash
-keytool -genkey -v -keystore tambola-release.keystore \
-  -alias tambola -keyalg RSA -keysize 2048 -validity 10000
-```
-
-Store the keystore file and passwords securely. You will need them for every release.
-
-## Configure signing in Gradle
-
-Create `android/keystore.properties` (do NOT commit this file):
-
-```properties
-storeFile=../tambola-release.keystore
+keytool -genkeypair -v -keystore tambola-upload.keystore -alias tambola-upload \
+  -keyalg RSA -keysize 4096 -validity 10000
+cat > keystore.properties <<'EOF'
+storeFile=../tambola-upload.keystore
 storePassword=YOUR_STORE_PASSWORD
-keyAlias=tambola
+keyAlias=tambola-upload
 keyPassword=YOUR_KEY_PASSWORD
+EOF
+chmod 600 keystore.properties tambola-upload.keystore
 ```
 
-Add to `android/app/build.gradle` above `android {`:
-
-```groovy
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-```
-
-Inside `android { }`, add:
-
-```groovy
-signingConfigs {
-    release {
-        storeFile file(keystoreProperties['storeFile'] ?: 'debug.keystore')
-        storePassword keystoreProperties['storePassword'] ?: ''
-        keyAlias keystoreProperties['keyAlias'] ?: ''
-        keyPassword keystoreProperties['keyPassword'] ?: ''
-    }
-}
-buildTypes {
-    release {
-        signingConfig signingConfigs.release
-        minifyEnabled true
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
-}
-```
-
-## Build release AAB (for Play Store)
+## Release AAB
 
 ```bash
-npm run build && npx cap sync android
-cd android
-./gradlew bundleRelease
+npm run release        # build web + sync + bundleRelease
 ```
 
 Output: `android/app/build/outputs/bundle/release/app-release.aab`
 
-## Upload to Play Store
+Verify it is signed before uploading:
 
-1. Go to https://play.google.com/console
-2. Create your app listing (requires $25 developer account)
-3. Upload the `.aab` file under "Production" > "Create new release"
-4. Fill in store listing details (screenshots, description, feature graphic, etc.)
-5. Set content rating, pricing, and distribution
-6. Submit for review
+```bash
+jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab   # → "jar verified."
+```
 
-## Alternative: Play App Signing
+## Version bumps
 
-Instead of managing your own keystore, you can use Play App Signing where Google manages the signing key. Upload a signed APK/AAB with an upload key, and Google re-signs it with the actual release key. This is recommended for new apps.
+Edit `android/app/build.gradle` → `defaultConfig`:
+
+- `versionCode` — integer, must increase on **every** upload. Play rejects a repeat.
+- `versionName` — the string users see, e.g. `1.0.1`.
+
+## Publishing the privacy policy
+
+Play requires a publicly reachable privacy policy URL for every app.
+`docs/privacy-policy.html` is ready to serve. To host it free on GitHub Pages:
+
+1. Push the repo to GitHub.
+2. Repo → **Settings → Pages** → Source: *Deploy from a branch* → Branch `main`, folder `/docs`.
+3. The policy lands at `https://<user>.github.io/<repo>/privacy-policy.html`.
+4. Open it once to confirm, then paste that URL into the Play Console listing.
+
+## Play Console — first submission
+
+Console: https://play.google.com/console/u/0/developers/4953426829520023902/app-list
+
+All listing text, graphics paths, content-rating answers and data-safety answers are in
+[`store/listing.md`](../store/listing.md). Order of operations:
+
+1. **Create app** — name `Tambola — Housie Caller`, Game, Free, default language English (India).
+2. **Set up your app** checklist, in this order — Play blocks the release until each is green:
+   - App access → *All functionality is available without special access*
+   - Ads → *No ads*
+   - Content rating → complete the questionnaire (answers in `store/listing.md`; the
+     gambling question is **No**, with the reasoning noted there)
+   - Target audience → 13+; *does not appeal to children*
+   - News app → No
+   - Data safety → *no data collected or shared*
+   - Government app / financial / health → No
+   - Privacy policy URL → the Pages URL above
+3. **Store listing** — short + full description, app icon, feature graphic, 4 phone screenshots.
+4. **Production → Create new release**
+   - Opt in to **Play App Signing** when prompted (do this; see the warning above).
+   - Upload `app-release.aab`.
+   - Release name: `1.0 (1)`. Release notes: `First release.`
+5. **Countries / regions** — select at least India.
+6. **Send for review.** First review of a new personal developer account typically takes
+   several days and may require the 12-tester closed-testing programme before production
+   is unlocked — check the console's own prompts, as this rule applies to accounts created
+   after Nov 2023.
+
+## Updating an existing release
+
+```bash
+# bump versionCode (and versionName) in android/app/build.gradle first
+npm run release
+jarsigner -verify android/app/build/outputs/bundle/release/app-release.aab
+# upload the new .aab to a Production release
+```

@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* ponytail: no webfont import — the app must run fully offline and Play Data Safety
+   stays 'no data collected' with zero outbound requests. System sans below. */
 
 /* ========== Tokens ========== */
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* BMS Palette */
   --p5: #ff5264;
@@ -256,7 +257,14 @@ body {
 }
 
 /* ========== Board ========== */
-.board-wrap { padding: 0 14px 4px; position: relative; z-index: 2; }
+/* ponytail: board cells are square, so the board height is width-driven and tall
+   phones left a dead gap above the control deck. Let this section absorb the slack
+   and centre the board in it instead of piling it into one hole. */
+.board-wrap {
+  padding: 0 14px 4px; position: relative; z-index: 2;
+  flex: 1 1 auto;
+  display: flex; flex-direction: column; justify-content: center;
+}
 .board-head {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
 }

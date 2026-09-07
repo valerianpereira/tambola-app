@@ -45,7 +45,26 @@ otherwise the app ships without web assets.
 
 ## Release builds
 
-Signing setup, release AAB, and Play Store upload steps: [docs/RELEASE.md](docs/RELEASE.md).
+```bash
+npm run release    # web build + cap sync + signed release AAB
+```
+
+Output: `android/app/build/outputs/bundle/release/app-release.aab`
+
+Release signing is already wired in `android/app/build.gradle`; it reads the gitignored
+`android/keystore.properties`. Full signing, versioning and Play Console steps:
+[docs/RELEASE.md](docs/RELEASE.md).
+
+## Play Store assets
+
+Everything needed for the listing lives in `store/`:
+
+- `store/listing.md` — descriptions, content-rating and data-safety answers
+- `store/graphics/` — 512x512 icon, 1024x500 feature graphic
+- `store/screenshots/` — four 960x1708 phone screenshots
+
+The privacy policy Play requires is `docs/privacy-policy.html`, ready to serve from
+GitHub Pages (see docs/RELEASE.md).
 
 ## Project layout
 
@@ -57,7 +76,8 @@ src/
   data.js             number call phrases
 resources/            source SVGs for app icon and splash
 android/              Capacitor Android project
-docs/                 release guide, design notes
+store/                Play Store listing copy, graphics, screenshots
+docs/                 release guide, privacy policy, design notes
 ```
 
 App icon and splash are regenerated from `resources/` with `npx capacitor-assets generate`.
