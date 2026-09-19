@@ -113,10 +113,7 @@ body {
 }
 .app-header .logo-dot {
   width: 28px; height: 28px; border-radius: 8px;
-  background: var(--gradient-bms-red);
-  display: grid; place-items: center;
-  font: 800 12px/1 var(--font-sans); color: #fff;
-  box-shadow: 0 3px 10px rgba(220,53,75,0.35);
+  box-shadow: 0 3px 10px rgba(212,85,43,0.35);
 }
 .app-header .title {
   flex: 1;

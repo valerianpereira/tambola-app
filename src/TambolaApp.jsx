@@ -270,7 +270,7 @@ export default function TambolaApp({ theme = 'dark', themeMode = 'system', onTog
   return (
     <div className={`tambola-app theme-${theme}`}>
       <div className="app-header">
-        <div className="logo-dot">T</div>
+        <img className="logo-dot" src="/favicon.svg" alt="" width="28" height="28" />
         <div className="title">
           Tambola
           <span>Caller &middot; Housie 1&ndash;90</span>
