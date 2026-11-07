@@ -136,23 +136,30 @@ function PrizeRail({ claimed, toggleClaim }) {
   );
 }
 
+// First tap arms for 3s, second tap runs action. skip=true runs immediately.
+function useConfirmTap(action, skip = false) {
+  const [armed, setArmed] = useState(false);
+  const timer = useRef(null);
+  const onTap = () => {
+    if (!armed && !skip) {
+      setArmed(true);
+      timer.current = setTimeout(() => setArmed(false), 3000);
+      return;
+    }
+    clearTimeout(timer.current);
+    setArmed(false);
+    action();
+  };
+  return [armed, onTap];
+}
+
 // ---------- Control deck ----------
 function ControlDeck({ state }) {
   const { running, setRunning, speed, setSpeed, callNext, undoLast, resetGame, finished, called } = state;
   const canUndo = called.length > 0;
-  const [confirmUndo, setConfirmUndo] = useState(false);
-  const confirmTimer = useRef(null);
-
-  const onUndo = () => {
-    if (!confirmUndo) {
-      setConfirmUndo(true);
-      confirmTimer.current = setTimeout(() => setConfirmUndo(false), 3000);
-      return;
-    }
-    clearTimeout(confirmTimer.current);
-    setConfirmUndo(false);
-    undoLast();
-  };
+  const [confirmUndo, onUndo] = useConfirmTap(undoLast);
+  // Nothing called yet = nothing to lose, reset straight away.
+  const [confirmReset, onReset] = useConfirmTap(resetGame, called.length === 0);
 
   const onPrimary = () => {
     if (finished) {
@@ -220,8 +227,8 @@ function ControlDeck({ state }) {
         <button className="ghost-btn" onClick={callNext} disabled={finished}>
           <Icon name="hand" size={13} /> Manual call
         </button>
-        <button className="ghost-btn danger" onClick={resetGame}>
-          <Icon name="refresh" size={13} /> New game
+        <button className={`ghost-btn danger${confirmReset ? ' confirm' : ''}`} onClick={onReset}>
+          <Icon name="refresh" size={13} /> {confirmReset ? 'Tap again — clears this game' : 'New game'}
         </button>
       </div>
     </div>
